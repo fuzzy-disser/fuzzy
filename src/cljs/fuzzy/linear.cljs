@@ -70,6 +70,12 @@
 (defn layout []
   (fn []
     [:div.padding-20
+     [:h4 "Итог: "
+      (fz/and
+       (schema/human-factor @lang-vars)
+       (schema/electro-station @lang-vars)
+       (schema/environment @lang-vars))]
+     
      [:div.row
       [:div.span3.bg-gray.padding-5
        [lang-term-control :x3]
@@ -97,6 +103,9 @@
        [:h4 "Среда: " (schema/environment @lang-vars)]
        
        ]]
+
+     [:hr]
+     [:img {:src "/3.8.png"}]
      ]
     
     ))

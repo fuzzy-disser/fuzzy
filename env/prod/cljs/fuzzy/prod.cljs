@@ -1,4 +1,4 @@
 (ns fuzzy.prod
-  (:require [fuzzy.core :as core]))
+  (:require [fuzzy.linear :as linear]))
 
-(core/init!)
+(linear/init!)

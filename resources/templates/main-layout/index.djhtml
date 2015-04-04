@@ -22,13 +22,11 @@
           {% endsafe %}
     </div>
 
-    <script src="/js/jquery.js"></script>
-	<script src="/js/bootstrap.js"></script> 
+    <script src="/js2/jquery.js"></script>
+	<script src="/js2/bootstrap.js"></script> 
 
-    <script src="/js/react.js"></script>
-    {% script "js/out/goog/base.js" %}
-    {% script "js/app.js" %}
-    <script type="text/javascript">goog.require("fuzzy.dev");</script>
+    <script src="/js2/react.js"></script>
+    {% script "/js/app.js" %}
 
   </body>
 </html>

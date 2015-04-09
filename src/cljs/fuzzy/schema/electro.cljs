@@ -1,4 +1,4 @@
-(ns fuzzy.schema
+(ns fuzzy.schema.electro
   (:require [fuzzy.fzlogic :as fz]))
 
 (defn human-factor [vars]

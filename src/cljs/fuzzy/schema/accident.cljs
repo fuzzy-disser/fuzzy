@@ -1,17 +1,8 @@
 (ns fuzzy.schema.accident
-  (:require [fuzzy.fzlogic :as fz]))
+  (:require [fuzzy.fzlogic :as fz])
+  (:require-macros [fuzzy.template :refer [defschema]]))
 
-(defn human-factor [vars]
-  (let [{{x1 :value x1-w :weight} :x1
-         {x2 :value x2-w :weight} :x2
-         {x4 :value x4-w :weight} :x4
-         {x6 :value x6-w :weight} :x6
-         {x7 :value x7-w :weight} :x7} vars]
-    (fz/or (* x1 x1-w)
-           (* x2 x2-w)
-           (* x4 x4-w)
-           (* x6 x6-w)
-           (* x7 x7-w))))
+(defschema human-factor [or x1 x2 x4 x6 x7])
 
 (defn electro-station [vars]
   (let [{{y4 :value y4-w :weight} :y4

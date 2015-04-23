@@ -3,8 +3,8 @@
             [reagent.cursor :as rc]
             [fuzzy.fzlogic :as fz]
             [fuzzy.schema.electro :as electro]
-            [fuzzy.schema.accident :as accident]
-            ))
+            [fuzzy.schema.accident :as accident])
+  (:require-macros [fuzzy.template :refer [defschema test-foo]]))
 
 
 (def lang-vars
@@ -85,18 +85,18 @@
          :value 0.5}
     })) 
 
-
-
-
 (defn log [what] (.log js/console (str what)))
 
 (defn lang-term-control [term-key]
   (let [term (rc/cursor [term-key] lang-vars)]
     [:div.input-prepend.padding-5
      [:label.add-on (str term-key)]
-     [:input.span1 {:type "text"
-                    :value (:value @term)
-                    :on-change #(reset! term (assoc @term :value (-> % .-target .-value)))}]]))
+     [:input.span1
+      {:type "text"
+       :value (:value @term)
+       :on-change #(reset! term
+                           (assoc @term :value
+                                  (-> % .-target .-value)))}]]))
 
 (defn electro-injure
   []

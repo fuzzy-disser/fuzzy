@@ -19,5 +19,3 @@
     `(defn ~name [~args-sym]
        (let [~@(expand-vars params args-sym)]
        (~op ~@params)))))
-
-(defmacro test-foo [] `(.log js/console "asdsa!!!!!!!!!3"))

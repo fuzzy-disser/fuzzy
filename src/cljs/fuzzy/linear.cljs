@@ -3,8 +3,10 @@
             [reagent.cursor :as rc]
             [fuzzy.fzlogic :as fz]
             [fuzzy.schema.electro :as electro]
+            [fuzzy.schema.fire :as fire]
             [fuzzy.schema.accident :as accident])
-  (:require-macros [fuzzy.template :refer [defschema test-foo]]))
+  (:require-macros [fuzzy.template :refer [defschema]]))
+
 
 
 (def lang-vars
@@ -34,6 +36,10 @@
          :weight 0.031
          :danger 1.17
          :value 0.5}
+    :x10 {:description "Физическое состояние"
+         :weight 0.001
+         :danger 0.03
+         :value 0.5}
 
     :y3 {:description "Срок эксплуатации ЭУ"
          :weight 0.072 :danger 1.72
@@ -52,8 +58,14 @@
          :danger 1.35
          :value 0.5}
 
+    :y5 {:description "Отказ технологического электрооборудования"
+         :weight 0.046
+         :danger 1.35
+         :value 0.9}
+
     :y6 {:description "Отказ(отсутствие) средств электрозашиты"
-         :weight 0.045 :danger 1.06
+         :weight 0.045
+         :danger 1.06
          :value 0.9}
 
     :y8 {:description "Эфективность средств электрозащиты"
@@ -97,6 +109,46 @@
        :on-change #(reset! term
                            (assoc @term :value
                                   (-> % .-target .-value)))}]]))
+
+(defn electro-fire
+  []
+  [:div.padding-20
+   [:h4 "Итог: "
+    (fz/and
+     (electro/human-factor @lang-vars)
+     (electro/electro-station @lang-vars)
+     (electro/environment @lang-vars))]
+   
+   [:div.row
+    [:div.span3.bg-gray.padding-5
+     [lang-term-control :x1]
+     [lang-term-control :x4]
+     [lang-term-control :x10]
+     [:hr]
+     [:h4 "Человеческий фактор: " (fire/human-factor @lang-vars)]
+     ]
+    
+    [:div.span4.bg-gray.padding-5
+     [lang-term-control :y1]
+     [lang-term-control :z3]
+     [lang-term-control :y5]
+     [lang-term-control :y4]
+     [lang-term-control :z1]
+     [lang-term-control :z2]
+     [:hr]
+     [:h4 "Электроустановка: " (fire/electro-station @lang-vars)]
+     ]
+
+    [:div.span4.bg-gray.padding-5
+     [lang-term-control :y6]
+     [lang-term-control :y8]
+     [lang-term-control :z5]
+     [:hr]
+     [:h4 "Среда: " (fire/environment @lang-vars)]]
+]
+
+   [:hr]
+   [:img {:src "/3.7.png"}]])
 
 (defn electro-injure
   []
@@ -181,10 +233,6 @@
    [:hr]
    [:img {:src "/3.9.png"}]])
 
-(defn electro-fire []
-  [:div
-  [:h3 "В статье не было данных по переменным:"]
-  [:pre "y'6, y''6, z'5, z''5, z'''5"]])
 (def pages
   [{:title "Пожар в электроустановке"
     :fn electro-fire}

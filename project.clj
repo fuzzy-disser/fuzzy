@@ -8,10 +8,9 @@
 
   :dependencies [[org.clojure/clojure "1.6.0"]
 
-                 [reagent "0.5.0-alpha"]
-                 [reagent-utils "0.1.2"]
-                 [reagent/reagent-cursor "0.1.2"]
-                 [org.clojure/clojurescript "0.0-2850" :scope "provided"]
+                 [reagent "0.6.0-rc"]
+                 [reagent-utils "0.1.9"]
+                 [org.clojure/clojurescript "1.9.76"]
 
                  [selmer "0.8.0"]                 
                  [ring "1.3.2"]
@@ -21,11 +20,11 @@
                  [leiningen "2.5.0"]
                  [figwheel "0.2.5"]]
 
-  :plugins [[lein-cljsbuild "1.0.4"]
+  :plugins [[lein-cljsbuild "1.1.3"]
             [lein-environ "1.0.0"]
             [lein-ring "0.9.1"]
             [lein-ancient "0.6.1"]
-            [lein-asset-minifier "0.2.2"]]
+            [lein-asset-minifier "0.3.0"]]
 
   :ring {:handler fuzzy.handler/app
          ;; :nrepl {:start? true :port 5225}
@@ -71,7 +70,7 @@
                :ring-handler fuzzy.handler/app}
 
     ;; :ring {:auto-refresh? true }
-    :cljsbuild {:builds {:app {:source-paths ["env/dev/cljs"]
+    :cljsbuild {:builds {:app {:source-paths ["env/prod/cljs"]
                                :compiler
                                {:optimizations :none
                                 :source-map true

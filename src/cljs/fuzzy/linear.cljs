@@ -1,6 +1,5 @@
 (ns fuzzy.linear
   (:require [reagent.core :as reagent :refer [atom]]
-            [reagent.cursor :as rc]
             [fuzzy.fzlogic :as fz]
             [fuzzy.schema.electro :as electro]
             [fuzzy.schema.fire :as fire]
@@ -100,7 +99,7 @@
 (defn log [what] (.log js/console (str what)))
 
 (defn lang-term-control [term-key]
-  (let [term (rc/cursor [term-key] lang-vars)]
+  (let [term (reagent/cursor lang-vars [term-key])]
     [:div.input-prepend.padding-5
      [:label.add-on (str term-key)]
      [:input.span1
@@ -261,8 +260,9 @@
       [nav-menu pages current-page]
       [(:fn @current-page)]]]))
 
-(defn init! []
+(defn ^:export run []
   (reagent/render [layout] (.getElementById js/document "app")))
 
-(init!)
+(run)
+
 

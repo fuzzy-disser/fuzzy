@@ -8,10 +8,10 @@
 (enable-console-print!)
 
 (figwheel/watch-and-reload
-  :websocket-url "ws://localhost:3443/figwheel-ws"
+  :websocket-url "ws://localhost:3000/figwheel-ws"
   :jsload-callback (fn [] (r/force-update-all)))
 
-(linear/init!)
+(linear/run)
 
 
 ;; (use 'figwheel-sidecar.repl-api)

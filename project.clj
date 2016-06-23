@@ -4,92 +4,108 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
-  :source-paths ["src/clj" "src/cljs"]
+  :dependencies [[org.clojure/clojure "1.8.0"]
+                 [org.clojure/clojurescript "1.8.51" :scope "provided"]
+                 [org.clojure/core.async "0.2.374"]
+                 [ring/ring-devel "1.4.0"]
+                 [ring/ring-core "1.4.0"]
+                 [ring/ring-defaults "0.2.0"]
+                 [http-kit "2.1.19"]
+                 [reagent "0.6.0-SNAPSHOT"]
+                 [reagent-forms "0.5.23"]
+                 [reagent-utils "0.1.8"]
+                 [selmer "0.8.0"]
+                 [prone "1.1.1"]
+                 [compojure "1.5.0"]
+                 [hiccup "1.0.5"]
+                 [environ "1.0.2"]
+                 [secretary "1.2.3"]
+                 [jarohen/chord "0.7.0"]
+                 [org.clojure/tools.reader "0.10.0"]
+                 [secretary "1.2.3"]
+                 [com.taoensso/timbre "4.3.1"]]
 
-  :dependencies [[org.clojure/clojure "1.6.0"]
-
-                 [reagent "0.6.0-rc"]
-                 [reagent-utils "0.1.9"]
-                 [org.clojure/clojurescript "1.9.76"]
-
-                 [selmer "0.8.0"]                 
-                 [ring "1.3.2"]
-                 [ring/ring-defaults "0.1.4"]
-                 [prone "0.8.0"]
-                 [compojure "1.3.1"]
-                 [leiningen "2.5.0"]
-                 [figwheel "0.2.5"]]
-
-  :plugins [[lein-cljsbuild "1.1.3"]
-            [lein-environ "1.0.0"]
-            [lein-ring "0.9.1"]
-            [lein-ancient "0.6.1"]
-            [lein-asset-minifier "0.3.0"]]
+  :plugins [[lein-environ "1.0.2"]
+            [refactor-nrepl "2.3.0-SNAPSHOT"]
+            [lein-asset-minifier "0.2.8"]
+            [cider/cider-nrepl "0.13.0-SNAPSHOT"]]
 
   :ring {:handler fuzzy.handler/app
-         ;; :nrepl {:start? true :port 5225}
-         ;; :auto-refresh? true
          :uberwar-name "fuzzy.war"}
 
   :min-lein-version "2.5.0"
 
   :uberjar-name "fuzzy.jar"
 
-  :clean-targets ^{:protect false} ["resources/public/js"]
+  :main fuzzy.server
+
+  :clean-targets ^{:protect false} [:target-path
+                                    [:cljsbuild :builds :app :compiler :output-dir]
+                                    [:cljsbuild :builds :app :compiler :output-to]]
+
+  :source-paths ["src/clj" "src/cljs"]
 
   :minify-assets
   {:assets
-    {"resources/public/css/site.min.css" "resources/public/css/site.css"}}
+   {"resources/public/css/site.min.css" "resources/public/css/site.css"}}
 
-  :cljsbuild {:builds {:app {:source-paths ["src/cljs"]
-                             :compiler {:output-to     "resources/public/js/app.js"
-                                        :output-dir    "resources/public/js/out"
-                                        :externs       ["react/externs/react.js"]}}}}
+  :cljsbuild {:builds {:app {:source-paths ["src/cljs" "src/cljs"]
+                             :compiler {:output-to "resources/public/js/app.js"
+                                        :output-dir "resources/public/js/out"
+                                        :asset-path "js/out"
+                                        :optimizations :none
+                                        :pretty-print true}}}}
 
-  :profiles
-  {:dev
-   {
-    ;; :repl-options
-    ;; this one for browser
-    ;; {:init-ns teacherguild.dev
-    ;; :port 5445}
+  :figwheel {:http-server-root "public"
+             :server-port 3000
+             :nrepl-port 7002
+             :nrepl-middleware ["cider.nrepl/cider-middleware"
+                                "refactor-nrepl.middleware/wrap-refactor"
+                                "cemerick.piggieback/wrap-cljs-repl"]
+             :css-dirs ["resources/public/css"]
+             :ring-handler fuzzy.handler/app}
 
-    :dependencies [[ring-mock "0.1.5"]
-                   [ring/ring-devel  "1.3.2"]
-                   [pjstadig/humane-test-output "0.6.0"]]
+  :profiles {:dev {:repl-options {:init-ns fuzzy.repl
+                                  :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl
+                                                     cider.nrepl.middleware.apropos/wrap-apropos
+                                                     cider.nrepl.middleware.classpath/wrap-classpath
+                                                     cider.nrepl.middleware.complete/wrap-complete
+                                                     cider.nrepl.middleware.info/wrap-info
+                                                     cider.nrepl.middleware.inspect/wrap-inspect
+                                                     cider.nrepl.middleware.macroexpand/wrap-macroexpand
+                                                     cider.nrepl.middleware.ns/wrap-ns
+                                                     cider.nrepl.middleware.resource/wrap-resource
+                                                     cider.nrepl.middleware.stacktrace/wrap-stacktrace
+                                                     cider.nrepl.middleware.test/wrap-test
+                                                     cider.nrepl.middleware.trace/wrap-trace
+                                                     cider.nrepl.middleware.undef/wrap-undef]}
 
-    :plugins [[lein-figwheel "0.2.5-SNAPSHOT"]]
+                   :dependencies [[ring/ring-mock "0.3.0"]
+                                  [ring/ring-devel "1.4.0"]
+                                  [com.cemerick/piggieback "0.2.1"]
+                                  [org.clojure/tools.nrepl "0.2.12"]
+                                  [pjstadig/humane-test-output "0.8.0"]]
 
-    :injections [(require 'pjstadig.humane-test-output)
-                 (pjstadig.humane-test-output/activate!)]
+                   :source-paths ["env/dev/clj"]
+                   :plugins [[lein-figwheel "0.5.2"]
+                             [lein-cljsbuild "1.1.3"]]
 
-    :figwheel {:http-server-root "public"
-               :server-port 3443
-               :nrepl-port 7888
-               :css-dirs ["resources/public/css"]
-               :ring-handler fuzzy.handler/app}
+                   :injections [(require 'pjstadig.humane-test-output)
+                                (pjstadig.humane-test-output/activate!)]
 
-    ;; :ring {:auto-refresh? true }
-    :cljsbuild {:builds {:app {:source-paths ["env/prod/cljs"]
-                               :compiler
-                               {:optimizations :none
-                                :source-map true
-                                :source-map-timestamp true
-                                :pretty-print  true
-                                }}}}
-    }
+                   :env {:dev true}
 
-   :uberjar {:hooks [leiningen.cljsbuild minify-assets.plugin/hooks]
-             :env {:production true}
-             :aot :all
-             :omit-source true
-             :cljsbuild {:jar true
-                         :builds {:app
-                                  {:source-paths ["env/prod/cljs"]
-                                   :compiler
-                                   {:optimizations :advanced
-                                    :pretty-print false}}}}}
+                   :cljsbuild {:builds {:app {:source-paths ["env/dev/cljs"]
+                                              :compiler {:main "fuzzy.dev"
+                                                         :source-map true}}}}}
 
-   :production {:ring {:open-browser? false
-                       :stacktraces?  false
-                       :auto-reload?  false}}})
+             :uberjar {:hooks [leiningen.cljsbuild minify-assets.plugin/hooks]
+                       :env {:production true}
+                       :aot :all
+                       :omit-source true
+                       :cljsbuild {:jar true
+                                   :builds {:app
+                                            {:source-paths ["env/prod/cljs"]
+                                             :compiler
+                                             {:optimizations :advanced
+                                              :pretty-print false}}}}}})

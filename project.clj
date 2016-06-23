@@ -58,6 +58,7 @@
 
   :figwheel {:http-server-root "public"
              :server-port 3000
+             :reload-clj-files false
              :nrepl-port 7002
              :nrepl-middleware ["cider.nrepl/cider-middleware"
                                 "refactor-nrepl.middleware/wrap-refactor"

@@ -1,6 +1,6 @@
 (ns fuzzy.linear
   (:require [reagent.core :as reagent :refer [atom]]
-            [fuzzy.fzlogic :as fz]
+            [fuzzy.fzlogic :as fz :refer [fz-and fz-or]]
             [fuzzy.schema.electro :as electro]
             [fuzzy.schema.fire :as fire]
             [fuzzy.schema.accident :as accident])
@@ -8,15 +8,12 @@
 
 
 
-(def default-terms [{:descr "большой"
-                     :name :big
-                     :ma-fn [[0.7 0.1] [0.9 0.9] [1 0.9]]}
-                    {:descr "средний"
-                     :name :mid
-                     :ma-fn [[0.2 0.1] [0.3 0.9] [0.6 0.9] [0.8 0.1]]}
-                    {:descr "малый"
-                     :name :low
-                     :ma-fn [[0 0.9] [0.1 0.9] [0.3 0.1]]}])
+(def default-terms {:big {:description "большой"
+                          :ma-fn [[0.7 0.1] [0.9 0.9] [1 0.9]]}
+                    :mid {:description "средний"
+                          :ma-fn [[0.2 0.1] [0.3 0.9] [0.6 0.9] [0.8 0.1]]}
+                    :low {:description "малый"
+                          :ma-fn [[0 0.9] [0.1 0.9] [0.3 0.1]]}})
 
 (def lang-vars
   (atom
@@ -166,63 +163,98 @@
     })) 
 
 (defn log [what] (.log js/console (str what)))
+(defn dir [o] (.dir js/console o))
+(defn select-swap-handler [a k]
+  (fn [select-el]
+    (let [new-value (keyword (.. select-el -target -value))]
+      (swap! a assoc k new-value))))
 
-(defn lang-term-control [term-key]
-  (let [term (reagent/cursor lang-vars [term-key])]
-    [:div.input-prepend.padding-5
-     [:label.add-on (str term-key)]
-     [:input.span1
-      {:type "text"
-       :value (:value @term)
-       :on-change #(reset! term
-                           (assoc @term :value
-                                  (-> % .-target .-value)))}]]))
+(defn lang-term-control [risk-param]
+  (let [term (reagent/cursor lang-vars [risk-param])
+        choised (:choised-term @term)]
+    [:div.padding-5
+     [:i.span4 (:description @term)]
+     [:select.span2
+      {:default-value (name choised)
+       :on-change (select-swap-handler term :choised-term)}
+      (doall
+        (for [term-key (keys (:terms @term))]
+          (let [t (get (:terms @term) term-key)]
+            [:option
+             {:value (name term-key)
+              :key (str risk-param term-key)}
+             (:description t)])))]
+     ;; [:h6 (fz/fz-value @term)]
+     ]))
+;; [:input.span1
+;;       {:type "text"
+;;        :value (:value @term)
+;;        :on-change #(reset! term
+;;                            (assoc @term :value
+;;                                   (-> % .-target .-value)))}]
+(defn get-choised-ma-fn [risk-param]
+  (let [choised-term (get-in @lang-vars [risk-param :choised-term])]
+    (get-in @lang-vars [risk-param :terms choised-term])))
+;; (get-choised-ma-fn :x1)
 
 (defn electro-fire
   []
-  [:div.padding-20
-   [:h4 "Итог: "
-    (fz/and
-     (electro/human-factor @lang-vars)
-     (electro/electro-station @lang-vars)
-     (electro/environment @lang-vars))]
+  (let [human-factor-value (fire/human-factor @lang-vars)
+        electro-station-value (fire/electro-station @lang-vars)
+        environment-value (fire/environment @lang-vars)
+        total-value (fz-and human-factor-value
+                            electro-station-value
+                            environment-value)]
+    [:div.padding-20
+     [:h4 "Итог: " (fz/defuzz total-value) "%"]
    
-   [:div.row
-    [:div.span3.bg-gray.padding-5
-     [lang-term-control :x1]
-     [lang-term-control :x4]
-     [lang-term-control :x10]
-     [:hr]
-     [:h4 "Человеческий фактор: " (fire/human-factor @lang-vars)]
-     ]
+     [:div.row
+      [:div.span3.bg-gray.padding-5
+       ;; [:h6 (:choised-term (:x1 @lang-vars))]
+       [lang-term-control :x1]
+       [lang-term-control :x4]
+       [lang-term-control :x10]
+       [:hr]
+       [:h4 "Человеческий фактор: "
+        (-> human-factor-value
+            fz/get-choised-term
+            :description)]
+       ]
     
-    [:div.span4.bg-gray.padding-5
-     [lang-term-control :y1]
-     [lang-term-control :z3]
-     [lang-term-control :y5]
-     [lang-term-control :y4]
-     [lang-term-control :z1]
-     [lang-term-control :z2]
-     [:hr]
-     [:h4 "Электроустановка: " (fire/electro-station @lang-vars)]
-     ]
+      [:div.span4.bg-gray.padding-5
+       [lang-term-control :y1]
+       [lang-term-control :z3]
+       [lang-term-control :y5]
+       [lang-term-control :y4]
+       [lang-term-control :z1]
+       [lang-term-control :z2]
+       [:hr]
+       [:h4 "Электроустановка: "
+        (-> electro-station-value
+            fz/get-choised-term
+            :description)]
+       ]
 
-    [:div.span4.bg-gray.padding-5
-     [lang-term-control :y6]
-     [lang-term-control :y8]
-     [lang-term-control :z5]
-     [:hr]
-     [:h4 "Среда: " (fire/environment @lang-vars)]]
-]
+      [:div.span4.bg-gray.padding-5
+       [lang-term-control :y6]
+       [lang-term-control :y8]
+       [lang-term-control :z5]
+       [:hr]
+       [:h4 "Среда: "
+        (-> environment-value
+            fz/get-choised-term
+            :description)]]
+      ]
 
-   [:hr]
-   [:img {:src "/3.7.png"}]])
+     [:hr]
+     [:img {:src "/3.7.png"}]])
+  )
 
 (defn electro-injure
   []
   [:div.padding-20
    [:h4 "Итог: "
-    (fz/and
+    (fz-and
      (electro/human-factor @lang-vars)
      (electro/electro-station @lang-vars)
      (electro/environment @lang-vars))]
@@ -261,7 +293,7 @@
 (defn accident-no-power []
   [:div.padding-20
    [:h4 "Итог: "
-    (fz/and
+    (fz-and
      (accident/human-factor @lang-vars)
      (accident/electro-station @lang-vars)
      (accident/environment @lang-vars))]

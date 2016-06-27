@@ -1,5 +1,6 @@
 (ns fuzzy.linear
   (:require [reagent.core :as reagent :refer [atom]]
+            [clojure.string :as string]
             [alandipert.storage-atom :refer [local-storage]]
             [fuzzy.fzlogic :as fz :refer [fz-and fz-or]]
             [fuzzy.schema.electro :as electro]
@@ -178,13 +179,13 @@
     [:div.padding-5
      [:i.span4 (:description @term)]
      [:select.span2
-      {:default-value (name choised)
+      {:default-value (:choised-term @term)
        :on-change (select-swap-handler term :choised-term)}
       (doall
         (for [term-key (keys (:terms @term))]
           (let [t (get (:terms @term) term-key)]
             [:option
-             {:value (name term-key)
+             {:value term-key
               :key (str risk-param term-key)}
              (:description t)])))]
      ;; [:h6 (fz/fz-value @term)]
@@ -359,6 +360,10 @@
           :on-click #(reset! current-page page)}
          (:title page)]]))])
 
+(defn ma-tostring [ma]
+  (string/join " + "
+               (map #(string/join "/" %) ma)))
+
 (def current-risk-key (atom :x4))
 (defn vars-config []
   [:div.row.span12
@@ -372,24 +377,24 @@
           :on-change #(reset! current-risk-key
                               var-key)}
          var-key]))]]
-   (let [risk-param (reagent/cursor @lang-vars @current-risk-key)]
+   (let [risk-param (reagent/cursor @lang-vars @current-risk-key)
+         term-in-edit-key (atom (:choised-term @risk-param))
+         term-in-edit (reagent/cursor risk-param [:terms @term-in-edit-key]) 
+         ]
      [:div.span10
       [:div.span1
        [:input.form-control.span1
         {:value (:weight @risk-param)}]]
       [:div.span2
-       [:select.span2
-        {:size 3
-         :default-value (:choised-term @risk-param)}
-        (doall
-         (for [term-key (keys (:terms @risk-param))]
-           (let [term (reagent/cursor risk-param [:terms term-key])]
-             [:option
-              {:key term-key :value term-key}
-              (:description @term)]
-             )))]]]
-     
-     )
+       (doall
+        (for [term-key (keys (:terms @risk-param))]
+          (let [term (reagent/cursor risk-param [:terms term-key])]
+            [:div.form-group
+             {:key term-key}
+             [:label (:description @term)]
+             [:input.form-control.span4
+              {:value (ma-tostring
+                       (:ma-fn @term))}]])))]])
    [:hr.span12]]
   
   )

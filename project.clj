@@ -7,6 +7,7 @@
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/clojurescript "1.8.51" :scope "provided"]
                  [org.clojure/core.async "0.2.374"]
+                 [alandipert/storage-atom "2.0.1"]
                  [ring/ring-devel "1.4.0"]
                  [ring/ring-core "1.4.0"]
                  [ring/ring-defaults "0.2.0"]
@@ -49,7 +50,7 @@
   {:assets
    {"resources/public/css/site.min.css" "resources/public/css/site.css"}}
 
-  :cljsbuild {:builds {:app {:source-paths ["src/cljs" "src/cljs"]
+  :cljsbuild {:builds {:app {:source-paths ["src/cljs"]
                              :compiler {:output-to "resources/public/js/app.js"
                                         :output-dir "resources/public/js/out"
                                         :asset-path "js/out"

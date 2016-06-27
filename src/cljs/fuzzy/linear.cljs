@@ -1,5 +1,6 @@
 (ns fuzzy.linear
   (:require [reagent.core :as reagent :refer [atom]]
+            [alandipert.storage-atom :refer [local-storage]]
             [fuzzy.fzlogic :as fz :refer [fz-and fz-or]]
             [fuzzy.schema.electro :as electro]
             [fuzzy.schema.fire :as fire]
@@ -15,152 +16,154 @@
                     :low {:description "малый"
                           :ma-fn [[0 0.9] [0.1 0.9] [0.3 0.1]]}})
 
+(def lang-vars-init
+  {:x1 {:description "Неправильные действия"
+        :weight 0.042
+        :danger 1.58
+        :terms default-terms
+        :choised-term :low
+        :value 0.2}
+
+   :x2 {:description "Контроль технологических процессов"
+        :weight 0.041
+        :danger 1.55
+        :terms default-terms
+        :choised-term :low
+
+        :value 0.1}
+
+   :x3 {:description "Соблюдение техники безопасности"
+        :weight 0.036 :danger 1.36
+        :terms default-terms
+        :choised-term :mid
+
+        :value 0.5}
+
+   :x4 {:description "Уровень профессионализма"
+        :weight 0.034 :danger 1.28
+        :terms default-terms
+        :choised-term :mid
+
+        :value 0.5}
+   :x7 {:description "Ошибки в оперативных решениях"
+        :weight 0.022 :danger 0.08
+        :terms default-terms
+        :choised-term :low
+
+        :value 0.1}
+
+   :x6 {:description "Обученность действиям в нештатных ситуациях"
+        :weight 0.031
+        :danger 1.17
+        :terms default-terms
+        :choised-term :mid
+
+        :value 0.5}
+   :x10 {:description "Физическое состояние"
+         :weight 0.001
+         :danger 0.03
+         :terms default-terms
+         :choised-term :mid
+
+         :value 0.7}
+
+   :y3 {:description "Срок эксплуатации ЭУ"
+        :weight 0.072 :danger 1.72
+        :terms default-terms
+        :choised-term :mid
+
+        :value 0.5}
+    
+   :y2 {:description "Степень износа изоляционных частей ЭУ"
+        :weight 0.78 :danger 1.85
+        :terms default-terms
+        :choised-term :mid
+
+        :value 0.5}
+    
+   :y1 {:description "Уровень опасности возникновения аварийных режимов"
+        :weight 0.093 :danger 3.01
+        :terms default-terms
+        :choised-term :mid
+
+        :value 0.5}
+
+   :y4 {:description "Степень износа токоведущих частей ЭУ"
+        :weight 0.057
+        :danger 1.35
+        :terms default-terms
+        :choised-term :low
+
+        :value 0.1}
+
+   :y5 {:description "Отказ технологического электрооборудования"
+        :weight 0.046
+        :danger 1.35
+        :terms default-terms
+        :choised-term :big
+
+        :value 0.9}
+
+   :y6 {:description "Отказ(отсутствие) средств электрозашиты"
+        :weight 0.045
+        :danger 1.06
+        :terms default-terms
+        :choised-term :low
+
+        :value 0.1}
+
+   :y8 {:description "Эфективность средств электрозащиты"
+        :weight 0.031
+        :danger 0.73
+        :terms default-terms
+        :choised-term :low
+
+        :value 0.3}
+
+   :y7 {:desc "Возможность возникновения ОТС"
+        :weight 0.034
+        :danger 0.81
+        :terms default-terms
+        :choised-term :low
+
+        :value 0.1}
+    
+   :z1 {:description "Уровень деструктивных воздействий параметров микроклимата"
+        :weight 0.055 :danger 2.62
+        :terms default-terms
+        :choised-term :mid
+
+        :value 0.5}
+    
+   :z3 {:description "Диагностика технического состояния ЭУ"
+        :weight 0.042 :danger 2
+        :terms default-terms
+        :choised-term :mid
+
+        :value 0.5}
+   :z2 {:description "Качество текущего ремонта технологического электрооборудования"
+        :weight 0.049 :danger 2.34
+        :terms default-terms
+        :choised-term :mid
+
+        :value 0.5}
+   :z5 {:description "Состояние условий труда"
+        :weight 0.2 :danger 0.09
+        :terms default-terms
+        :choised-term :low
+
+        :value 0.1}
+    
+   :z4 {:description "Частота возникновения возникновения опасных факторов и превышение критических значений параметров"
+        :weight 0.028 :danger 1.33
+        :terms default-terms
+        :choised-term :mid
+
+        :value 0.5}
+   })
 (def lang-vars
-  (atom
-   {:x1 {:description "Неправильные действия"
-         :weight 0.042
-         :danger 1.58
-         :terms default-terms
-         :choised-term :low
-         :value 0.2}
-
-    :x2 {:description "Контроль технологических процессов"
-         :weight 0.041
-         :danger 1.55
-         :terms default-terms
-         :choised-term :low
-
-         :value 0.1}
-
-    :x3 {:description "Соблюдение техники безопасности"
-         :weight 0.036 :danger 1.36
-         :terms default-terms
-         :choised-term :mid
-
-         :value 0.5}
-
-    :x4 {:description "Уровень профессионализма"
-         :weight 0.034 :danger 1.28
-         :terms default-terms
-         :choised-term :mid
-
-         :value 0.5}
-    :x7 {:description "Ошибки в оперативных решениях"
-         :weight 0.022 :danger 0.08
-         :terms default-terms
-         :choised-term :low
-
-         :value 0.1}
-
-    :x6 {:description "Обученность действиям в нештатных ситуациях"
-         :weight 0.031
-         :danger 1.17
-         :terms default-terms
-         :choised-term :mid
-
-         :value 0.5}
-    :x10 {:description "Физическое состояние"
-          :weight 0.001
-          :danger 0.03
-          :terms default-terms
-          :choised-term :mid
-
-          :value 0.7}
-
-    :y3 {:description "Срок эксплуатации ЭУ"
-         :weight 0.072 :danger 1.72
-         :terms default-terms
-         :choised-term :mid
-
-         :value 0.5}
-    
-    :y2 {:description "Степень износа изоляционных частей ЭУ"
-         :weight 0.78 :danger 1.85
-         :terms default-terms
-         :choised-term :mid
-
-         :value 0.5}
-    
-    :y1 {:description "Уровень опасности возникновения аварийных режимов"
-         :weight 0.093 :danger 3.01
-         :terms default-terms
-         :choised-term :mid
-
-         :value 0.5}
-
-    :y4 {:description "Степень износа токоведущих частей ЭУ"
-         :weight 0.057
-         :danger 1.35
-         :terms default-terms
-         :choised-term :low
-
-         :value 0.1}
-
-    :y5 {:description "Отказ технологического электрооборудования"
-         :weight 0.046
-         :danger 1.35
-         :terms default-terms
-         :choised-term :big
-
-         :value 0.9}
-
-    :y6 {:description "Отказ(отсутствие) средств электрозашиты"
-         :weight 0.045
-         :danger 1.06
-         :terms default-terms
-         :choised-term :low
-
-         :value 0.1}
-
-    :y8 {:description "Эфективность средств электрозащиты"
-         :weight 0.031
-         :danger 0.73
-         :terms default-terms
-         :choised-term :low
-
-         :value 0.3}
-
-    :y7 {:desc "Возможность возникновения ОТС"
-         :weight 0.034
-         :danger 0.81
-         :terms default-terms
-         :choised-term :low
-
-         :value 0.1}
-    
-    :z1 {:description "Уровень деструктивных воздействий параметров микроклимата"
-         :weight 0.055 :danger 2.62
-         :terms default-terms
-         :choised-term :mid
-
-         :value 0.5}
-    
-    :z3 {:description "Диагностика технического состояния ЭУ"
-         :weight 0.042 :danger 2
-         :terms default-terms
-         :choised-term :mid
-
-         :value 0.5}
-    :z2 {:description "Качество текущего ремонта технологического электрооборудования"
-         :weight 0.049 :danger 2.34
-         :terms default-terms
-         :choised-term :mid
-
-         :value 0.5}
-    :z5 {:description "Состояние условий труда"
-         :weight 0.2 :danger 0.09
-         :terms default-terms
-         :choised-term :low
-
-         :value 0.1}
-    
-    :z4 {:description "Частота возникновения возникновения опасных факторов и превышение критических значений параметров"
-         :weight 0.028 :danger 1.33
-         :terms default-terms
-         :choised-term :mid
-
-         :value 0.5}
-    })) 
+  (local-storage (atom lang-vars-init)
+                 :lang-vars))
 
 (defn log [what] (.log js/console (str what)))
 (defn dir [o] (.dir js/console o))
@@ -196,6 +199,7 @@
   (let [choised-term (get-in @lang-vars [risk-param :choised-term])]
     (get-in @lang-vars [risk-param :terms choised-term])))
 ;; (get-choised-ma-fn :x1)
+
 
 (defn electro-fire
   []
@@ -348,18 +352,37 @@
    (let [current-page-title (:title @current-page)]
      (for [page pages]
        [:li
-        {:class (when (= (:title page) current-page-title) "active")}
+        {:key (str (random-uuid))
+         :class (when (= (:title page) current-page-title) "active")}
         [:a
          {:href "#"
           :on-click #(reset! current-page page)}
          (:title page)]]))])
+
+(def current-var-config (atom :x1))
+
+(defn vars-config []
+  [:div.span12
+   [:select.span1
+    {:default-value @current-var-config }
+    (doall
+     (for [var-key (sort (keys @lang-vars))]
+       [:option
+        {:key var-key :value (name var-key)}
+        var-key]))]
+   
+   [:hr]]
   
+  )
 (defn layout []
   (fn []
     [:div.row
      [:div.span12
       [nav-menu pages current-page]
-      [(:fn @current-page)]]]))
+      [vars-config]
+
+      [(:fn @current-page)]]
+    ]))
 
 (defn ^:export run []
   (reagent/render [layout] (.getElementById js/document "app")))

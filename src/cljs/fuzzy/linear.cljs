@@ -359,19 +359,38 @@
           :on-click #(reset! current-page page)}
          (:title page)]]))])
 
-(def current-var-config (atom :x1))
-
+(def current-risk-key (atom :x4))
 (defn vars-config []
-  [:div.span12
-   [:select.span1
-    {:default-value @current-var-config }
-    (doall
-     (for [var-key (sort (keys @lang-vars))]
-       [:option
-        {:key var-key :value (name var-key)}
-        var-key]))]
-   
-   [:hr]]
+  [:div.row.span12
+   [:div.span1
+    [:select.span1
+     {:default-value @current-risk-key}
+     (doall
+      (for [var-key (sort (keys @lang-vars))]
+        [:option
+         {:key var-key :value (name var-key)
+          :on-change #(reset! current-risk-key
+                              var-key)}
+         var-key]))]]
+   (let [risk-param (reagent/cursor @lang-vars @current-risk-key)]
+     [:div.span10
+      [:div.span1
+       [:input.form-control.span1
+        {:value (:weight @risk-param)}]]
+      [:div.span2
+       [:select.span2
+        {:size 3
+         :default-value (:choised-term @risk-param)}
+        (doall
+         (for [term-key (keys (:terms @risk-param))]
+           (let [term (reagent/cursor risk-param [:terms term-key])]
+             [:option
+              {:key term-key :value term-key}
+              (:description @term)]
+             )))]]]
+     
+     )
+   [:hr.span12]]
   
   )
 (defn layout []
@@ -380,7 +399,6 @@
      [:div.span12
       [nav-menu pages current-page]
       [vars-config]
-
       [(:fn @current-page)]]
     ]))
 

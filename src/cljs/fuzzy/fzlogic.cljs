@@ -41,15 +41,3 @@
 
 (defn fz-or [& vars]
   (apply fz-max vars))
-
-
-
-;; ((assoc-fz-value-handler min 0.2)
-;;  {:description "Соблюдение техники безопасности", :weight 0.036, :danger 1.36, :terms {:big {:description "большой", :ma-fn [[0.7 0.1] [0.9 0.9] [1 0.9]]}, :mid {:description "средний", :ma-fn [[0.2 0.1] [0.3 0.9] [0.6 0.9] [0.8 0.1]]}, :low {:description "малый", :ma-fn [[0 0.9] [0.1 0.9] [0.3 0.1]]}}, :choised-term :mid, :value 0.5})
-
-(def tmp-x {:description "Соблюдение техники безопасности", :weight 0.036, :danger 1.36, :terms {:big {:description "большой", :ma-fn [[0.7 0.1] [0.9 0.9] [1 0.9]]}, :mid {:description "средний", :ma-fn [[0.2 0.1] [0.3 0.9] [0.6 0.9] [0.8 0.1]]}, :low {:description "малый", :ma-fn [[0 0.9] [0.1 0.9] [0.3 0.1]]}}, :choised-term :mid, :value 0.5})
-;; (def tmp (fz-value tmp-x max))
-
-
-;; (.log js/console (str tmp))
-(.round js/Math 0.9 4)

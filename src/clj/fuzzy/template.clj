@@ -40,10 +40,3 @@
   (let [vars-sym (gensym "vars")]
     `(defn ~name [~vars-sym]
        ~(expand-logic body vars-sym))))
-
-;; (defschema human-factor [or x3 x4 x10])
-(defschema new-schema
-           [and x3 x4
-            (and z1 z3)
-            (or x2 x1
-                (and y2 z9))])
